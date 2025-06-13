@@ -1,9 +1,7 @@
-import React from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/authService";
 import AuthCard from "../components/card/AuthCard";
-import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -36,7 +34,7 @@ export default function LoginPage() {
     >
       <form
         onSubmit={handleSubmit}
-        className="p-8 w-96 space-y-6"
+        className="w-full max-w-md mx-auto px-4 py-8 space-y-6"
       >
         <h2 className="text-2xl font-extrabold text-center text-gray-700">Sign In</h2>
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
