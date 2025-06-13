@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { start, update } from "../services/gameService";
 
 export default function GamePage() {
   const [gameId, setGameId] = useState(null);
@@ -40,11 +41,7 @@ export default function GamePage() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authentication token found");
 
-      const response = await axios.post("http://localhost:5000/api/game/start", {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await start({}, token);
 
       setGameId(response.data._id);
       setGameStarted(true);
@@ -63,22 +60,16 @@ export default function GamePage() {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No authentication token found");
 
-    await axios.put("http://localhost:5000/api/game/update", 
-      {
-        gameId,
-        logs: logs.map(logEntry => ({
-          timestamp: new Date(), 
-          action: "Game Event",    
-          detail: logEntry,      
-        })),
-        result,
-      },         
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    await update({
+      gameId,
+      logs: logs.map(logEntry => ({
+        timestamp: new Date(),
+        action: "Game Event",
+        detail: logEntry,
+      })),
+      result,
+    }, token);
+
   } catch (error) {
     console.error("Error saving game data:", error);
   }

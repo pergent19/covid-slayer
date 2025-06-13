@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api'; // change to your backend URL
+const API = import.meta.env.API || 'http://localhost:5000';
 
 export const login = async (data) => {
-  const res = await axios.post(`${API}/auth/login`, data);
+  const res = await axios.post(`${API}/api/auth/login`, data);
   return res.data;
 };
 
