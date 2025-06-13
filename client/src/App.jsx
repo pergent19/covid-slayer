@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import GamePage from "./pages/GamePage";
 // import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
@@ -16,7 +17,10 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <GamePage />
+            <>
+              <Navbar />
+              <GamePage />
+            </>
           </ProtectedRoute>
         }
       />

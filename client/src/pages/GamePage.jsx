@@ -9,8 +9,32 @@ export default function GamePage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
 
-  // ✅ Start Game manually when clicking "Start"
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  useEffect(() => {
+    if (gameStarted && timeLeft > 0 && !gameOver) {
+      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [gameStarted, timeLeft, gameOver]); 
+
+  useEffect(() => {
+    if (gameStarted && !gameOver && (health.player <= 0 || health.monster <= 0 || timeLeft === 0)) {
+      const finalWinner = health.player > health.monster ? `Player ${user.fullName} Wins!` : "Covid Monster Wins!";
+      setWinner(finalWinner);
+      setGameOver(true);
+      setShowWinnerModal(true)
+
+      logAction(`🏆 Game Over! ${finalWinner}`);
+
+      if (gameId) {
+        updateGameInDB(gameId, log, finalWinner.toLowerCase());
+      }
+    }
+  }, [health, timeLeft, gameStarted]); 
+
   const startGame = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -23,7 +47,7 @@ export default function GamePage() {
       });
 
       setGameId(response.data._id);
-      setGameStarted(true); // ✅ Set game as started
+      setGameStarted(true);
       setGameOver(false);
       setWinner(null);
       setHealth({ player: 100, monster: 100 });
@@ -34,41 +58,18 @@ export default function GamePage() {
     }
   };
 
-  // ✅ Timer only runs **after** game starts
-  useEffect(() => {
-    if (gameStarted && timeLeft > 0 && !gameOver) {
-      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-      return () => clearInterval(timer);
-    }
-  }, [gameStarted, timeLeft, gameOver]); 
-
-  // ✅ Handle Game Over Logic
-  useEffect(() => {
-    if (gameStarted && !gameOver && (health.player <= 0 || health.monster <= 0 || timeLeft === 0)) {
-      const finalWinner = health.player > health.monster ? "Player Wins!" : "Covid Monster Wins!";
-      setWinner(finalWinner);
-      setGameOver(true);
-
-      logAction(`🏆 Game Over! ${finalWinner}`);
-
-      if (gameId) {
-        updateGameInDB(gameId, log, finalWinner.toLowerCase());
-      }
-    }
-  }, [health, timeLeft, gameStarted]); 
-
  const updateGameInDB = async (gameId, logs, result) => {
   try {
-    const token = localStorage.getItem("token"); // ✅ Get token from localStorage
+    const token = localStorage.getItem("token");
     if (!token) throw new Error("No authentication token found");
 
     await axios.put("http://localhost:5000/api/game/update", 
       {
         gameId,
         logs: logs.map(logEntry => ({
-          timestamp: new Date(),  // ✅ Add timestamp
-          action: "Game Event",    // ✅ Customize this as needed
-          detail: logEntry,        // ✅ Store actual log message
+          timestamp: new Date(), 
+          action: "Game Event",    
+          detail: logEntry,      
         })),
         result,
       },         
@@ -83,8 +84,7 @@ export default function GamePage() {
   }
 };
 
-  // const logAction = (text) => setLog((l) => [text, ...l.slice(0, 9)]);
-  const logAction = (text) => setLog((existingLogs) => [text, ...existingLogs]);
+  const logAction = (text) => setLog((existingLogs) => [text, ...existingLogs.slice(0, 9)]);
 
   const attack = () => {
     if (!gameStarted || gameOver) return;
@@ -94,8 +94,8 @@ export default function GamePage() {
       player: h.player - dragonDmg,
       monster: h.monster - playerDmg,
     }));
-    logAction(`🐉 Dragon attacks Player for ${dragonDmg}`);
-    logAction(`⚔️ Player strikes Dragon for ${playerDmg}`);
+    logAction(`🐉 Dragon attacks Player ${user.fullName} for ${dragonDmg}`);
+    logAction(`⚔️ Player ${user.fullName} strikes Dragon for ${playerDmg}`);
   };
 
   const powerAttack = () => {
@@ -107,7 +107,7 @@ export default function GamePage() {
       monster: h.monster - playerDmg,
     }));
     logAction(`🐉 The Dragon unleashes a **fierce counterattack** for ${dragonDmg}!`);
-    logAction(`💥 Player **smashes** the Dragon with a power hit for ${playerDmg}!`);
+    logAction(`💥 Player ${user.fullName} **smashes** the Dragon with a power hit for ${playerDmg}!`);
   };
 
   const heal = () => {
@@ -118,14 +118,14 @@ export default function GamePage() {
       player: Math.min(100, h.player + healValue - infection),
       monster: h.monster,
     }));
-    logAction(`🩹 Player heals for ${healValue}, infected for ${infection}`);
+    logAction(`🩹 Player ${user.fullName} heals for ${healValue}, infected for ${infection}`);
   };
 
   const surrender = () => {
     if (!gameStarted || gameOver) return;
     setGameOver(true);
     setWinner("Covid Monster Wins!");
-    logAction(`⚰️ Player surrendered.`);
+    logAction(`⚰️ Player ${user.fullName} surrendered.`);
   };
 
   return (
@@ -134,7 +134,13 @@ export default function GamePage() {
 
       {gameStarted ? (
         gameOver ? (
-          <h3 className="text-xl font-bold text-green-500">{winner}</h3>
+          <>
+            <h3 className="text-xl font-bold text-green-500 mb-5">{winner}</h3>
+            <button onClick={startGame} className="bg-green-500 hover:bg-green-700 px-6 py-2 rounded-md text-white transition mb-5">
+              Start again?
+            </button>
+        </>
+
         ) : (
           <div className="flex justify-between mb-4">
             <p>Player Health: {health.player}</p>
@@ -143,7 +149,7 @@ export default function GamePage() {
           </div>
         )
       ) : (
-        <button onClick={startGame} className="bg-green-500 hover:bg-green-700 px-6 py-2 rounded-md text-white transition">
+        <button onClick={startGame} className="bg-green-500 hover:bg-green-700 px-6 py-2 rounded-md text-white transition mb-5">
           Start Game
         </button>
       )}
@@ -165,6 +171,32 @@ export default function GamePage() {
           ))}
         </ul>
       </div>
+
+      {showWinnerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-80 text-center">
+            <h2 className="text-xl font-bold mb-4 text-green-700">{winner}</h2>
+            <p className="mb-6">Would you like to play again?</p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => {
+                  setShowWinnerModal(false);
+                  startGame();
+                }}
+                className="bg-green-600 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={() => setShowWinnerModal(false)}
+                className="bg-gray-400 hover:bg-gray-600 text-white px-4 py-2 rounded-md"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

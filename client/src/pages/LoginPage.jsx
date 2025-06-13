@@ -14,8 +14,10 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const res = await login(form);
+      console.log("Login successful:", res);
       localStorage.setItem("token", res.token);
-      navigate("/dashboard");
+      localStorage.setItem("user", JSON.stringify(res.user));
+      navigate("/");
     } catch (err) {
       setError("Invalid email or password. Please try again.");
     }

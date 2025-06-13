@@ -25,9 +25,7 @@ exports.startGame = async (req, res) => {
 
 exports.updateGame = async (req, res) => {
   const { gameId, logs, result } = req.body;
-  console.log(req.body)
   try {
-    // 1. Update the game
     const game = await Game.findByIdAndUpdate(
       gameId,
       {
@@ -38,16 +36,14 @@ exports.updateGame = async (req, res) => {
       { new: true }
     );
 
-    // 2. Update the user
     const userId = game.userId;
-    const scoreIncrement = result === 'player wins!' ? 10 : 0;
+    const scoreIncrement = result === `player ${req.user.fullName.toLowerCase()} wins!` ? 10 : 0;
 
     if (!userId) {
       console.error("User ID not found.");
       return;
     }
 
-    console.log(`Updating User: ${userId} | Incrementing Score by: ${scoreIncrement}`);
     await User.findByIdAndUpdate(userId, {
       $inc: { gamesPlayed: 1, score: scoreIncrement },
     });

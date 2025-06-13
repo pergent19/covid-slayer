@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AuthCard from "../components/card/AuthCard";
 import { Link } from "react-router-dom";
+import { register } from "../services/authService";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ fullName: "", email: "", password: "", avatar: "" });
@@ -15,7 +16,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/auth/register", form);
+      const res = await register(form);
       navigate("/login");
     } catch (err) {
       setError("Registration failed. Please check your details and try again.");
