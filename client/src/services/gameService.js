@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = import.meta.env.API || 'http://localhost:5000';
+const API = import.meta.env.VITE_API || 'http://localhost:5000';
 
 export const start = async (data = {}, token) => {
   const res = await axios.post(`${API}/api/game/start`, data, {

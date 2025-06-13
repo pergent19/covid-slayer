@@ -14,7 +14,6 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const res = await login(form);
-      console.log("Login successful:", res);
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
       navigate("/");
