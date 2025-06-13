@@ -19,3 +19,12 @@ export const update = async (data, token) => {
   });
   return res;
 };
+
+export const getGame = async (token) => {
+  const res = await axios.get(`${API}/api/game/my-games`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res;
+};

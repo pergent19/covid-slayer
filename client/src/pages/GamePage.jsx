@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { start, update } from "../services/gameService";
+import Dashboard from "../components/Dashboard";
 
 export default function GamePage() {
   const [gameId, setGameId] = useState(null);
@@ -188,6 +189,8 @@ export default function GamePage() {
           </div>
         </div>
       )}
+
+      <Dashboard />
     </div>
   );
 }

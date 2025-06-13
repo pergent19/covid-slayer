@@ -13,9 +13,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("Logging in with:", form);
       const res = await login(form);
-      console.log("Login response:", res);
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
       navigate("/");

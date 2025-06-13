@@ -5,11 +5,15 @@ const cors = require('cors');
 
 dotenv.config();
 const app = express();
-const allowedOrigins = ['https://covid-slayer.netlify.app'  || 'http://localhost:5173/'];
+
+
+const allowedOrigins = ['https://covid-slayer.netlify.app', 'http://localhost:5173'];
+
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true
+  credentials: true,
 }));
+
 app.use(express.json());
 
 // Routes
